@@ -10,12 +10,26 @@ def load_jsonl(file):
     df = pd.DataFrame(data)
     return df
 
+@st.cache_data
+def load_data():
+    
+    url = "https://raw.githubusercontent.com/tjsgh531/RAG_dashboard/blob/main/data/documents.jsonl"
+    response = requests.get(url)
+    return [json.loads(line) for line in response.text.splitlines()]
+'''
 def search_docs(id):
     with open('data/documents.jsonl', 'r') as f:
         for line in f:
             doc = json.loads(line)
             if doc['docid'] == id:
                 return doc['content']
+'''
+def search_docs(id):
+    data = load_data()
+    for doc in data:
+        if doc['docid'] == id:
+            return doc['content']
+    return None
 
 def search_contents(topk_ids):
 
