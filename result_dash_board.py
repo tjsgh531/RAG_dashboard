@@ -11,7 +11,7 @@ def load_jsonl(file):
     return df
 
 def search_docs(id):
-    with open('/upstage-ai-advanced-ir7/data/documents.jsonl', 'r') as f:
+    with open('data/documents.jsonl', 'r') as f:
         for line in f:
             doc = json.loads(line)
             if doc['docid'] == id:
