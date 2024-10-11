@@ -10,20 +10,13 @@ def load_jsonl(file):
     df = pd.DataFrame(data)
     return df
 
-@st.cache_data
-def load_data():
-    
-    url = "https://raw.githubusercontent.com/tjsgh531/RAG_dashboard/blob/main/data/documents.jsonl"
-    response = requests.get(url)
-    return [json.loads(line) for line in response.text.splitlines()]
-'''
 def search_docs(id):
     with open('data/documents.jsonl', 'r') as f:
         for line in f:
             doc = json.loads(line)
             if doc['docid'] == id:
                 return doc['content']
-'''
+
 def search_docs(id):
     data = load_data()
     for doc in data:
@@ -31,32 +24,23 @@ def search_docs(id):
             return doc['content']
     return None
 
-def search_contents(topk_ids):
-
-    doc_contents = []
-    for id in topk_ids:
-        content = search_docs(id)
-        doc_contents.append(content)
-
-    return doc_contents 
-
 def display_results(df, index):
     st.subheader(f"Query {index + 1}")
     st.write(f"Standalone Query: {df.iloc[index]['standalone_query']}")
 
-    contents = df.iloc[index]['topk_content']
+    references = df.iloc[index]['references']
     topk = df.iloc[index]['topk']
     topk_df = pd.DataFrame([
-        {"rank": 1, "id": topk[0], "content": contents[0]},
-        {"rank": 2, "id": topk[1], "content": contents[1]},
-        {"rank": 3, "id": topk[2], "content": contents[2]}
+        {"rank": 1, "id": topk[0], "score" : references[0]['score'], "content": references[0]['content']},
+        {"rank": 2, "id": topk[1], "score" : references[1]['score'], "content": references[1]['content']},
+        {"rank": 3, "id": topk[2], "score" : references[2]['score'], "content": references[2]['content']}
     ])
 
     st.table(topk_df)
 
 def main():
     st.title("검색 결과 결과 대시보드")
-    upload_file = st.file_uploader("검색 결과 csv 파일 업로드 ['standalone_query', 'topk']")
+    upload_file = st.file_uploader("검색 결과 csv 파일 업로드 ['standalone_query', 'topk', 'references']")
 
     if upload_file is not None:
         df = load_jsonl(upload_file)
@@ -64,8 +48,7 @@ def main():
         total_queries = len(df)
         query_index = st.slider("Select Query", 0, total_queries - 1, 0)        
 
-        df["topk_content"] = df["topk"].apply(search_contents)
-        display_df = df[["standalone_query","topk", "topk_content"]]
+        display_df = df[["standalone_query","topk", "references"]]
 
         display_results(display_df, query_index)
 
