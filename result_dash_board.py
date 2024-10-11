@@ -28,6 +28,9 @@ def display_results(df, index, answer_show):
     st.subheader(f"Query {index + 1}")
     st.write(f"Standalone Query: {df.iloc[index]['standalone_query']}")
 
+    if answer_show:
+        st.write(f"Answer : {df.iloc[index]['answer']}")
+
     references = df.iloc[index]['references']
     topk = df.iloc[index]['topk']
     topk_df = pd.DataFrame([
@@ -36,13 +39,8 @@ def display_results(df, index, answer_show):
         {"rank": 3, "id": topk[2], "score" : references[2]['score'], "content": references[2]['content']}
     ])
 
-    if answer_show:
-        answer_df = topk_df.copy()
-        answers = df.iloc[index]['answer']
-        answer_df['answer'] = answers
-        st.table(answer_df)
-    else:
-        st.table(topk_df)
+
+    st.table(topk_df)
 
 def main():
     st.title("검색 결과 결과 대시보드")
