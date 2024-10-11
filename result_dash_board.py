@@ -24,7 +24,7 @@ def search_docs(id):
             return doc['content']
     return None
 
-def display_results(df, index):
+def display_results(df, index, answer_show):
     st.subheader(f"Query {index + 1}")
     st.write(f"Standalone Query: {df.iloc[index]['standalone_query']}")
 
@@ -36,11 +36,18 @@ def display_results(df, index):
         {"rank": 3, "id": topk[2], "score" : references[2]['score'], "content": references[2]['content']}
     ])
 
-    st.table(topk_df)
+    if answer_show:
+        answer_df = topk_df.copy()
+        answers = df.iloc[index]['answer']
+        answer_df['answer'] = answers
+        st.table(answer_df)
+    else:
+        st.table(topk_df)
 
 def main():
     st.title("검색 결과 결과 대시보드")
     upload_file = st.file_uploader("검색 결과 csv 파일 업로드 ['standalone_query', 'topk', 'references']")
+    answer_show = st.checkbox("생성 답변 보기")
 
     if upload_file is not None:
         df = load_jsonl(upload_file)
@@ -48,9 +55,9 @@ def main():
         total_queries = len(df)
         query_index = st.slider("Select Query", 0, total_queries - 1, 0)        
 
-        display_df = df[["standalone_query","topk", "references"]]
+        display_df = df[["standalone_query","topk", "references", 'answer']]
 
-        display_results(display_df, query_index)
+        display_results(display_df, query_index, answer_show)
 
 if __name__ == "__main__":
     main()
